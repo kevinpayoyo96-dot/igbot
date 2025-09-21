@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from config import BASE_URL, COOKIES_PATH, AUTO_LOGIN_USER, AUTO_LOGIN_PASS
+from config import BASE_URL, COOKIES_PATH, AUTO_LOGIN, LOGIN_USERNAME, LOGIN_PASSWORD
 from human import make_driver
 
 def is_logged_in(d):
@@ -22,15 +22,15 @@ def is_logged_in(d):
     return "login" not in (d.current_url or "").lower()
 
 def auto_login(d) -> bool:
-    if not AUTO_LOGIN_USER or not AUTO_LOGIN_PASS:
+    if not AUTO_LOGIN or not LOGIN_USERNAME or not LOGIN_PASSWORD:
         return False
     try:
         d.get(f"{BASE_URL}/accounts/login/")
         WebDriverWait(d, 10).until(EC.presence_of_element_located((By.NAME, "username")))
         u = d.find_element(By.NAME, "username")
         p = d.find_element(By.NAME, "password")
-        u.clear(); u.send_keys(AUTO_LOGIN_USER)
-        p.clear(); p.send_keys(AUTO_LOGIN_PASS)
+        u.clear(); u.send_keys(LOGIN_USERNAME)
+        p.clear(); p.send_keys(LOGIN_PASSWORD)
         # submit
         btns = d.find_elements(By.CSS_SELECTOR, "button[type='submit']")
         (btns[0] if btns else p).send_keys(Keys.ENTER)

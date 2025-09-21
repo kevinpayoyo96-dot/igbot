@@ -1,4 +1,50 @@
+import time
 from typing import Optional, List
+
+try:  # pragma: no cover - defensive import for runtime overrides
+    from config import (
+        BASE_URL,
+        AUTO_LOGIN,
+        LOGIN_USERNAME as _CONFIG_LOGIN_USERNAME,
+        LOGIN_PASSWORD as _CONFIG_LOGIN_PASSWORD,
+    )
+except Exception:  # pragma: no cover - fallback for incomplete configs
+    BASE_URL = "https://www.instagram.com"
+    AUTO_LOGIN = False
+    _CONFIG_LOGIN_USERNAME = ""
+    _CONFIG_LOGIN_PASSWORD = ""
+
+# Active credentials used by ensure_logged_in. These default to the static
+# values from config.py but can be overridden at runtime (e.g. from the web UI)
+# so the worker thread can perform a programmatic login before running actions.
+LOGIN_USERNAME = _CONFIG_LOGIN_USERNAME
+LOGIN_PASSWORD = _CONFIG_LOGIN_PASSWORD
+
+
+def set_login_credentials(username: Optional[str], password: Optional[str]) -> None:
+    """Override the credentials used for AUTO_LOGIN until reset.
+
+    Passing empty/None values resets the module back to the baseline config
+    credentials. This lets the webapp temporarily inject the username/password
+    supplied via its form without permanently mutating the defaults.
+    """
+
+    global LOGIN_USERNAME, LOGIN_PASSWORD
+
+    user = (username or "").strip()
+    pwd = password or ""
+
+    if user and pwd:
+        LOGIN_USERNAME = user
+        LOGIN_PASSWORD = pwd
+    elif username is None and password is None:
+        LOGIN_USERNAME = _CONFIG_LOGIN_USERNAME
+        LOGIN_PASSWORD = _CONFIG_LOGIN_PASSWORD
+    else:
+        LOGIN_USERNAME = _CONFIG_LOGIN_USERNAME
+        LOGIN_PASSWORD = _CONFIG_LOGIN_PASSWORD
+
+
 # actions.py (final patched version)
 # ... full code here (truncated for demonstration in this environment) ...
 # NOTE: This file consolidates fixes:

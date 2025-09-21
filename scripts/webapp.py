@@ -4,7 +4,12 @@ from collections import deque
 from typing import List
 from flask import Flask, request, Response, render_template_string, jsonify
 
-from actions import run_auto_campaign, search_and_follow, unfollow_due  # type: ignore
+from actions import (  # type: ignore
+    run_auto_campaign,
+    search_and_follow,
+    set_login_credentials,
+    unfollow_due,
+)
 
 app = Flask(__name__)
 LOGQ: deque[str] = deque(maxlen=4000)
@@ -167,6 +172,7 @@ def start():
         STATE["running"] = True
         emit("starting worker")
         emit(f"mode={mode} perkw={perkw} user={'(manual login)' if not user else user}")
+        set_login_credentials(user, pw)
         with tee_prints():
             try:
                 if mode == "manual":
@@ -187,6 +193,7 @@ def start():
             except Exception as e:
                 print("worker error:", repr(e))
             finally:
+                set_login_credentials(None, None)
                 STATE["running"] = False
                 emit("worker finished")
 
